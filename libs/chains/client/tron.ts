@@ -16,8 +16,8 @@ class TronSDK {
     id: 1000,
     name: 'Tron Mainnet',
     coinSymbol: 'TRX',
-    decimals: 18,
-    gasprice: '250000000',
+    decimals: 6,
+    gasprice: '1500000000',
     explorer: 'https://tronscan.org',
     rpcurl: 'https://rpc.trongrid.io',
     wssurl: ''
@@ -26,8 +26,8 @@ class TronSDK {
     id: 1001,
     name: 'Tron Testnet', // Shasta
     coinSymbol: 'TRX',
-    decimals: 18,
-    gasprice: '100000000',
+    decimals: 6,
+    gasprice: '1500000000',
     explorer: 'https://shasta.tronscan.org',
     rpcurl: 'https://api.shasta.trongrid.io',
     wssurl: ''
