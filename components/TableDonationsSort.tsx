@@ -87,7 +87,7 @@ export default function TableDonationsSort(props: Dictionary) {
     }),
     columnHelper.accessor('amount', {
       header: 'USD Amount',
-      cell: (info) => '$'+info.getValue().toFixed(2).toString(),
+      cell: (info) => '$'+info.getValue().toString(),
     }),
     columnHelper.accessor('chain', {
       header: 'Chain',

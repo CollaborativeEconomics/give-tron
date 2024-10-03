@@ -24,6 +24,7 @@ function buildList(props: Stats): Array<React.JSX.Element> {
   if(props.amountTarget){
     items.push(
       <ListObject
+        key={1}
         Icon={Sprout}
         text={
           '$' + decimalString(props.amountRaised) +
@@ -36,6 +37,7 @@ function buildList(props: Stats): Array<React.JSX.Element> {
   } else {
     items.push(
       <ListObject
+        key={2}
         Icon={Sprout}
         text={
           '$' + decimalString(props.amountRaised) + ' total raised'
@@ -46,6 +48,7 @@ function buildList(props: Stats): Array<React.JSX.Element> {
   if (props.raisedThisMonth) {
     items.push(
       <ListObject
+        key={3}
         Icon={DollarSign}
         text={'$' + props.raisedThisMonth.toLocaleString() + ' raised this month'}
       />
@@ -55,6 +58,7 @@ function buildList(props: Stats): Array<React.JSX.Element> {
     const initiativePlural = props.initiativeCount == 1 ? '' : 's'
     items.push(
       <ListObject
+        key={4}
         Icon={Target}
         text={props.initiativeCount + ' Initiative' + initiativePlural}
       />
@@ -63,6 +67,7 @@ function buildList(props: Stats): Array<React.JSX.Element> {
   const donorPlural = props.donorCount == 1 ? '' : 's'
   items.push(
     <ListObject
+      key={5}
       Icon={UserIcon}
       text={props.donorCount + ' Donor' + donorPlural}
     />
@@ -70,6 +75,7 @@ function buildList(props: Stats): Array<React.JSX.Element> {
   const institutionalDonorPlural = props.institutionalDonorCount == 1 ? '' : 's'
   items.push(
     <ListObject
+      key={6}
       Icon={Building2}
       text={
         props.institutionalDonorCount +
