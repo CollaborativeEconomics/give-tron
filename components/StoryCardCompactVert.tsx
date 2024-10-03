@@ -16,8 +16,7 @@ export default function StoryCardCompactVert(props:{story:Story}) {
     <Card className="flex flex-col overflow-hidden h-auto">
       <div className="relative min-w-[150px] w-full h-auto aspect-[8/5]">
         <Image
-          className=""
-          src={story.image}
+          src={story?.image || '/media/noimage.png'}
           alt="IMG BG"
           className="object-cover"
           width={300}

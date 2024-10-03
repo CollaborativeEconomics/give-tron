@@ -1,7 +1,7 @@
-//import { TronWeb } from 'tronweb'
-import { TronWeb, utils as TronWebUtils, Trx, TransactionBuilder, Contract, Event, Plugin } from 'tronweb'
+import { TronWeb } from 'tronweb'
 import { WalletProvider } from '@/types/wallet'
-import erc721 from '@/contracts/ntf721-abi.json'
+import { getContract } from '@/libs/utils/registry'
+//import erc721 from '@/contracts/ntf721-abi.json'
 import config from '@/app/config'
 
 type Dictionary = { [key:string]:any }
@@ -35,11 +35,12 @@ class TronServer {
   sdk: TronWeb
 
   constructor(){
+    const secret = process.env.ADMIN_WALLET_KEY || ''
     this.provider = this.network=='mainnet' ? this.mainnet : this.testnet
-    this.tronWeb = new TronWeb({
-      fullHost: this.provider.rpcurl
+    this.sdk = new TronWeb({
+      fullHost: this.provider.rpcurl,
       headers: { "TRON-PRO-API-KEY": process.env.RPC_PROVIDER_API_KEY },
-      //privateKey: 'your private key' // for signing transactions
+      privateKey: secret // for signing transactions
     })
   }
 
@@ -48,12 +49,12 @@ class TronServer {
   }
 
   toWei(num:number){
-    const wei = 10**this.provider.decimals
+    const wei = 10 ** this.provider.decimals
     return num * wei
   }
 
   fromWei(num:number){
-    const wei = 10**this.provider.decimals
+    const wei = 10 ** this.provider.decimals
     return num / wei
   }
 
@@ -67,21 +68,25 @@ class TronServer {
     return Buffer.from(hex.substr(2), 'hex').toString(encoding)
   }
 
-  addressToHex(address){
-    return this.tronWeb.address.toHex(address)
+  addressToHex(address:string){
+    return this.sdk.address.toHex(address)
   }
 
-  addressFromHex(address){
-    return this.tronWeb.address.fromHex(address)
+  addressFromHex(address:string){
+    return this.sdk.address.fromHex(address)
   }
 
   async fetchLedger(method:string, params:any){
+    console.log('FETCH', method, params)
+    console.log('URL', this.provider.rpcurl)
     let data = {id: '1', jsonrpc: '2.0', method, params}
     let body = JSON.stringify(data)
     let opt  = {method:'POST', headers:{'Content-Type':'application/json'}, body}
+    console.log('OPT', opt)
     try {
       let res = await fetch(this.provider.rpcurl, opt)
       let inf = await res.json()
+      console.log('INF', inf)
       return inf?.result
     } catch(ex:any) {
       console.error(ex)
@@ -89,101 +94,92 @@ class TronServer {
     }
   }
 
-  async sendPayment(address:string, amount:string, destinTag:string, callback:any){
-    console.log('Sending payment...')
-    const value = this.toWei(parseFloat(amount))
-    const secret = process.env.MINTER_PRIVATE || ''
-    const acct = this.sdk.trx.accounts.privateKeyToAccount(secret)
-    const source = acct.address
-    const nonce = await this.sdk.trx.getTransactionCount(source, 'latest')
-    const memo = this.strToHex(destinTag)
-    const tx = {
-      from: source, // minter wallet
-      to: address,  // receiver
-      value: value, // value in wei to send
-      data: memo    // memo initiative id
-    }
-    console.log('TX', tx)
-    const signed = await this.sdk.trx.sign(tx, secret)
-    const result = await this.sdk.trx.sendTransaction(signed)
-    console.log('RESULT', result)
-    //const txHash = await this.fetchLedger({method: 'eth_sendTransaction', params: [tx]})
+  async sendPayment(destin:string, amount:string, destinTag:string, callback:any){
+    console.log(`Sending ${amount} TRX to ${destin}`)
+    const secret = process.env.ADMIN_WALLET_KEY || ''
+    const from = this.sdk.address.fromPrivateKey(secret) || ''
+    const sun = this.sdk.toSun(parseFloat(amount)).toString()
+    console.log(`${sun} SUN`)
+    const trx = await this.sdk.transactionBuilder.sendTrx(destin, parseInt(sun), from)
+    console.log('TRX', trx)
+    const trs = await this.sdk.trx.sign(trx, secret)
+    console.log('SIGN', trs)
+    const result = await this.sdk.trx.sendRawTransaction(trs)
+    //const txHash = await this.fetchLedger({method: 'trx_sendTransaction', params: [tx]})
     //console.log({txHash});
+    //const result = await this.sdk.trx.sendTransaction(destin, Number(sun), secret)
+    //const result = await this.sdk.trx.send(destin, sun) // client
+    console.log('RESULT', result)
+    if(callback){
+      callback(result)
+    } else {
+      return result
+    }
   }
 
   async mintNFT(address: string, uri: string){
-    console.log(this.chain, 'server minting NFT to', address, uri)
-    const secret   = process.env.MINTER_PRIVATE || ''
-    const acct     = this.sdk.trx.accounts.privateKeyToAccount(secret)
-    const minter   = acct.address
-    //const contract = process.env.MINTER_CONTRACT || ''
-    const contract = getContract() // TODO: pass params
-    const instance = new this.sdk.trx.contract(erc721, contract)
-    const noncex   = await this.sdk.trx.getTransactionCount(minter, 'latest')
-    const nonce    = Number(noncex)
-    console.log('MINTER', minter)
-    console.log('NONCE', nonce)
-    //const data = instance.methods.mintNFT(address, uri).encodeABI()
-    const data = instance.mint(address, uri).encodeABI()
-    console.log('DATA', data)
-    const gasHex = await this.fetchLedger('eth_gasPrice', [])
-    const gasPrice = parseInt(gasHex,16)
-    console.log('GAS', gasPrice, gasHex)
-    const checkGas = await this.fetchLedger('eth_estimateGas', [{from:minter, to:contract, data}])
-    const gasLimit = Math.floor(parseInt(checkGas,16) * 1.20)
-    console.log('EST', gasLimit, checkGas)
-    const gas = { gasPrice, gasLimit }
-
-    const tx = {
-      from: minter, // minter wallet
-      to: contract, // contract address
-      value: '0',   // this is the value in wei to send
-      data: data,   // encoded method and params
-      gas: gas.gasLimit,
-      gasPrice: gas.gasPrice,
-      nonce
+    try {
+      console.log(this.chain, 'server minting NFT to', address, uri)
+      const secret   = process.env.ADMIN_WALLET_KEY || ''
+      const minter   = this.sdk.address.fromPrivateKey(secret)
+      console.log('MINTER', minter)
+      const chain    = this.chain.toLowerCase()
+      const network  = this.network
+      const entity_id = 'ALL'
+      const contract_type = 'NFTReceipt'
+      const contract = await getContract(entity_id, chain, network, contract_type)
+      console.log('CTR', contract)
+      if(!contract){
+        return {success:false, error:'NFT contract not found for this organization'}
+      }
+      const ctrid = contract[0].contract_address
+      console.log('CID', ctrid)
+      const instance = await this.sdk.contract().at(ctrid)
+      const op = {
+        callValue: 0,
+        feeLimit: 100_000_000,
+        shouldPollResponse: false
+      }
+      console.log('Minting...')
+      const txId = await instance.mint(address,uri).send(op)  
+      console.log('MINTED', txId)
+      const tkId = await instance.totalSupply().call()  
+      console.log('TOKENID', tkId)
+      //const tokenId = this.sdk.toDecimal(tkId).toString()
+      const tokenId = tkId.toString()
+      return {success:true, tokenId, txId}
+    } catch(ex:any) {
+      console.error(ex)
+      return {success:false, error:ex.message}
     }
-    console.log('TX', tx)
-
-    //const op = {
-    //  feeLimit:100_000_000,
-    //  callValue:0,
-    //  tokenId: 0,
-    //  tokenValue: 1,
-    //  shouldPollResponse:true
-    //}
-    //const result = await instance.mint(address,uri).send(op)
-    const sign = await this.sdk.trx.sign(tx, secret)
-    const info = await this.sdk.trx.sendTransaction(sign)
-    console.log('INFO', info)
-    const hasLogs = info.logs.length>0
-    let tokenNum = ''
-    if(hasLogs){
-      //console.log('LOGS.0', JSON.stringify(info?.logs[0].topics,null,2))
-      //console.log('LOGS.1', JSON.stringify(info?.logs[1].topics,null,2))
-      tokenNum = ' #'+parseInt((info.logs[0] as any).topics[3] || '0', 16)
-    }
-    if(info.status==1){
-      const tokenId = contract+tokenNum
-      const result = {success:true, txid:info?.transactionHash, tokenId}
-      console.log('RESULT', result)
-      return result
-    }
-    return {success:false, error:'Something went wrong'}
   }
 
   async getTransactionInfo(txid:string){
-    console.log('Get tx info', txid)
-    const info = await this.fetchLedger('eth_getTransactionByHash', [txid])
-    if(!info || info?.error){ return {success:false, error:'Error fetching tx info'} }
-    const result = {
-      success: true,
-      account: info?.from,
-      destination: info?.to,
-      destinationTag: this.hexToStr(info?.input),
-      amount: this.fromWei(info?.value)
+    console.log('Get tx infoy', txid)
+    try {
+      const info = await this.sdk.trx.getTransaction(txid)
+      console.log('INFO', info)
+      //console.log('INFO', JSON.stringify(info,null,2))
+      if(!info){ return {success:false, error:'Error fetching tx info'} }
+      // @ts-ignore: Typescript sucks donkey balls
+      const from   = this.sdk.address.fromHex(info.raw_data.contract[0].parameter.value.owner_address)
+      // @ts-ignore: Typescript sucks donkey balls
+      const destin = this.sdk.address.fromHex(info.raw_data.contract[0].parameter.value.to_address)
+      // @ts-ignore: Typescript sucks donkey balls
+      const amount = info.raw_data.contract[0].parameter.value.amount
+      const result = {
+        success: true,
+        account: from,
+        destination: destin,
+        destinationTag: '',
+        amount: this.fromWei(amount)
+      }
+      console.log('RES', result)
+      return result
+    } catch(ex:any) {
+      console.error(ex)
+      return {success:false, error:ex.message}
     }
-    return result
   }
 }
 

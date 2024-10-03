@@ -9,14 +9,13 @@ export default function InitiativeCardCompactShort(initiative: Initiative) {
     <Card className="flex flex-col overflow-hidden h-56">
       <CardContent className="flex flex-col pb-8 pt-3 gap-3 px-0">
         <Link href={`/initiatives/${initiative.id}`}>
-          <div className="inline-flex">
+          <div className="inline-flex relative">
             <Image
-              className="mt-3 ml-6"
+              className="mt-3 ml-6 object-cover"
               src={initiative.defaultAsset}
               alt="IMG BG"
               width={120}
               height={120}
-              className="fixed"
             />
             <div>
               <h3 className="px-6 pt-2 text-xl font-semibold uppercase">

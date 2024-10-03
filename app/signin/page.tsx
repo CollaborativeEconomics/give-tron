@@ -7,20 +7,21 @@ import { ConfigContext } from '@/components/config'
 import ButtonWallet from '@/components/ButtonWallet'
 import Chains from '@/libs/chains/client/apis'
 import { fetchApi, postApi } from '@/libs/utils/api'
+import config from '@/app/config'
 
 
 export default function Signin() {
-  const chainName = process.env.NEXT_PUBLIC_BLOCKCHAIN || ''
-  const chainid   = process.env.NEXT_PUBLIC_CHAIN_ID || ''
-  const network   = process.env.NEXT_PUBLIC_NETWORK || ''
-  const currency  = process.env.NEXT_PUBLIC_CURRENCY_CODE || ''
+  const chainName = config.blockchain.chainName || ''
+  const chainid   = config.blockchain.chainId || ''
+  const network   = config.blockchain.network || ''
+  const currency  = config.blockchain.coinSymbol || ''
   // @ts-ignore: Typescript sucks donkey balls
-  const {config, setConfig} = useContext(ConfigContext)
-  console.log('CONFIG INDEX', config)
+  const {userConfig, setUserConfig} = useContext(ConfigContext)
+  console.log('CONFIG INDEX', userConfig)
   const router = useRouter()
-  const [loginText, setLoginText] = useState(config?.user=='' ? 'LOGIN' : 'PROFILE '+config.wallet.substr(0,10))
-  const [logged, setLogged] = useState(config.user!=='')
-  const [userId, setUserId] = useState(config.user)
+  const [loginText, setLoginText] = useState(!userConfig?.user ? 'LOGIN' : 'PROFILE '+userConfig?.wallet?.substr(0,10))
+  const [logged, setLogged] = useState(userConfig?.user!=='')
+  const [userId, setUserId] = useState(userConfig?.user)
 
   async function checkUser(address:string){
     const data = await fetchApi('users?wallet='+address)
@@ -30,7 +31,7 @@ export default function Signin() {
       // Redirect to profile
       console.log('UserId', user.id)
       setUserId(user.id)
-      setConfig({...config, wallet:address, user:user.id})
+      setUserConfig({...userConfig, wallet:address, user:user.id})
       const callbackUrl = '/profile/'+user.id
       await signIn(chainName, {callbackUrl, address, chainName, chainid, network, currency})
       router.push('/profile/'+user.id)
@@ -67,9 +68,10 @@ export default function Signin() {
     }
 
     const chain = Chains[chainName]
+    console.log('CHAIN', chain)
     try {
       chain.connect(async (data:any) => {
-        //console.log('SignIn', data)
+        console.log('SignIn', data)
         //console.log('RetUrl', url)
         const address  = data?.address  || ''
         const chainid  = data?.chainid  || ''

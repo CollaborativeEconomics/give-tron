@@ -2,16 +2,17 @@ const config = {
   "title": "Give Tron",
   "description": "Make tax-deductible donations in crypto",
   "blockchain": {
+    "chainId"     : "1001",
     "chainName"   : "Tron",
     "coinSymbol"  : "TRX",
-    "decimals"    : 18,
+    "decimals"    : 6,
     "network"     : "testnet",
     "rpcServer"   : "https://api.shasta.trongrid.io",
     "explorer"    : "https://shasta.tronscan.org",
     "adminWallet" : "TVMHHvhVD92Qm7uwpnhSDetQpKrjjM7zGW",
   },
   "datachain": {
-    "chainname": "XinFin",
+    "chainName": "XinFin",
     "network": "testnet",
     "minterWallet": "0x1ac546d21473062f3c3b16b6392a2ec26f4539f0",
     "contracts": {
@@ -20,7 +21,7 @@ const config = {
     }
   },
   "filechain": {
-    "chainname" : "IPFS",
+    "chainName" : "IPFS",
     "gateway": "https://ipfs.filebase.io/ipfs/",
     "endpoint": "https://s3.filebase.com/",
     "pinning": "https://api.filebase.io/v1/ipfs",
@@ -28,10 +29,10 @@ const config = {
     "bucket": "kuyawa-test-ipfs"
   },
   "providers": {
-    "chainrpc": "https://something.alchemy.com",
-    "nextauth": "http://localhost:3000",
+    "chainRPC": "https://api.shasta.trongrid.io",
+    "nextAuth": "http://localhost:3000",
     "registry": "https://registry.staging.cfce.io/api"
   }
 }
 
-export default config as Const
+export default config

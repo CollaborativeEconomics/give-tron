@@ -1,4 +1,4 @@
-import Web3 from 'web3'
+import { TronWeb } from 'tronweb'
 import { WalletProvider } from '@/types/wallet'
 import erc20 from '@/contracts/erc20.json'
 
@@ -11,28 +11,29 @@ export default class Wallet {
   myaccount = ''
   wallet?:any = null
   provider?:WalletProvider
-  web3?:any = null
 
   constructor(provider:WalletProvider){
     this.provider = provider
-    this.web3 = new Web3(this.provider.rpcurl)
   }
 
   async init(window:any, provider:any) {
     console.log('Wallet starting...', provider)
-    //console.log('Wallet starting...')
-    if (window.ethereum) {
-      //console.log('window.ethereum')
+    if (window.tronWeb) {
       try {
         this.wallet = window.tronWeb || null
         this.setListeners()
-        this.accounts = await this.wallet?.enable()
-        //console.log('Accounts', this.accounts)
+        this.wallet.ready
+        const res = await this.wallet?.request({method: 'tron_requestAccounts'})
+        if(res?.code==200){
+          this.accounts = [this.wallet.defaultAddress.base58]
+        } else {
+          this.accounts = [this.wallet.defaultAddress.base58]
+        }
+        console.log('Accounts', this.accounts)
         this.myaccount = this.accounts ? this.accounts[0] : ''
-        //this.myaccount = this.wallet.selectedAddress
-        //this.setNetwork(window.ethereum.chainId)
+        //this.setNetwork(window.tronWeb.chainId)
         //this.loadWallet(window)
-        console.log('TronLink current chain', parseInt(window.ethereum.chainId), window.ethereum.chainId)
+        console.log('TronLink current chain', parseInt(window.tronWeb.chainId), window.ethereum.chainId)
         if(provider.id !== window.ethereum.chainId){
           await this.changeNetwork(provider)
         }
@@ -59,14 +60,9 @@ export default class Wallet {
     this.wallet.on('connect', (info:any)=>{
       console.log('> onConnect', parseInt(info.chainId), info.chainId);
       this.setNetwork(info.chainId);
-      //if(restore){
-      //  restore(this.network, this.myaccount)
-      //}
-      //this.loadWallet();
     });
     this.wallet.on('disconnect', (info:any)=>{
       console.log('> onDisconnect', info)
-      //
       console.log('Disconnected')
     });
     this.wallet.on('accountsChanged', (info:any)=>{
@@ -74,21 +70,11 @@ export default class Wallet {
       this.accounts = info;
       this.myaccount = info[0];
       console.log('My account', this.myaccount);
-      //if(restore){
-      //  restore(this.network, this.myaccount)
-      //}
-      //this.getBalance(this.myaccount);
     });
     this.wallet.on('chainChanged', (chainId:string)=>{
       console.log('> onChainChanged', parseInt(chainId), chainId)
       if(chainId==this.chainId) { console.log('Already on chain', chainId); return; }
       this.setNetwork(chainId)
-      //if(restore){
-      //  restore(this.network, this.myaccount)
-      //}
-      //this.loadWallet();
-      //this.requestAccount();
-      //this.getAccounts();
     })
     this.wallet.on('message', (info:any)=>{
       console.log('> onMessage', info)
@@ -98,12 +84,6 @@ export default class Wallet {
 
   setNetwork(chainId:string) {
     console.log('SetNetwork', chainId)
-    //if(!chainId){ chainId = this.wallet.chainId; }
-    //const mainnet = (chainId == '0x38') // 0x61 testnet
-    //this.network  = mainnet ? 'bsc-mainnet' : 'bsc-testnet'
-    //this.neturl   = mainnet ? this.MAINURL : this.TESTURL
-    //this.explorer = mainnet ? this.MAINEXP : this.TESTEXP
-    //this.chainId  = chainId
     console.log('Network', this.network, this.chainId)
   }
 
@@ -143,81 +123,9 @@ export default class Wallet {
 
   async loadWallet(window:any) {
     console.log('Loading wallet...', this.network);
-    this.web3 = new Web3(this.neturl);
-    //web3.eth.getChainId().then(id => { console.log('ChainId', id) })
-    //console.log('WEB3', web3);
-    console.log('VER', this.web3.version)
-
-    if (window.ethereum) {
-      //console.log('window.ethereum')
-      if(this.wallet.isConnected()) { 
-        console.log('Already connected to', this.wallet.chainId); 
-        this.getAccounts();
-        //this.getAddress(this.getBalance);
-      } else {
-        console.log('Connecting...')
-        const accts = await this.wallet.enable()
-        console.log('Enabled:', accts)
-        this.getAccounts();
-          //this.getAddress().then(adr=>{
-          //  console.log('Passed1')
-          //  this.getBalance(adr);
-          //});
-        //});
-      }
-    } else {
-      console.log('TronLink not available')
-    }
-  }
-/*
-  // TronLink Events
-  async onConnect(info) {
-    console.log('onConnect', info);
-    // info.chainId
-    //this.setNetwork(info.chainId);
-    //this.loadWallet();
   }
 
-  async onDisconnect(info) {
-    console.log('onDisconnect', info)
-    //
-    console.log('Disconnected')
-  }
 
-  async onAccounts(info) {
-    console.log('onAccounts', info)
-    this.accounts = info;
-    this.myaccount = info[0];
-    console.log('My account', this.myaccount);
-    this.getBalance(this.myaccount);
-  }
-
-  async onChain(chainId) {
-    console.log('onChain', chainId)
-    if(chainId==this.chainId) { console.log('Already on chain', chainId); return; }
-    this.setNetwork(chainId);
-    //this.loadWallet();
-    //this.requestAccount();
-    //this.getAccounts();
-  }
-
-  async onMessage(info) {
-    console.log('onMessage', info)
-  }
-*/
-  /*
-  function requestAccount() {
-      this.wallet.request({ method: 'eth_requestAccounts' }).then(onAccounts)
-      .catch(err => {
-        if (err.code === 4001) {
-          console.log('User rejected');
-          console.log('Please connect to TronLink wallet');
-        } else {
-          console.error('Connection error', err);
-        }
-      });
-  }
-  */
 
   // Methods
   getAccountHex(acts:[any]) {
@@ -229,7 +137,7 @@ export default class Wallet {
 
   async getAccounts() {
     console.log('Get accounts...')
-    this.wallet.request({method: 'eth_requestAccounts'}).then((accts:any)=>{
+    this.wallet.request({method: 'trx_requestAccounts'}).then((accts:any)=>{
       this.accounts = accts
       this.myaccount = accts[0]
       console.log('Accounts:', accts)
@@ -244,10 +152,9 @@ export default class Wallet {
 
   async getAddress(oncall:any) {
     console.log('Get address...')
-    this.wallet.request({method: 'eth_requestAccounts'}).then((res:any)=>{
+    this.wallet.request({method: 'trx_requestAccounts'}).then((res:any)=>{
       console.log('Account', res)
       this.myaccount = res[0]
-      //$('user-address').innerHTML = this.myaccount.substr(0,10)
       oncall(this.myaccount)
     }).catch((err:any) => { 
       console.log('Error: Wallet not connected')
@@ -258,66 +165,42 @@ export default class Wallet {
 
   async getBalance(adr:string) {
     console.log('Get balance...')
-    const balance = await this.wallet.request({method:'eth_getBalance', params:[adr, 'latest']})
+    const balance = await this.wallet.request({method:'trx_getBalance', params:[adr, 'latest']})
     console.log('Balance:', balance)
     return balance
   }
 
   async getGasPrice() {
-    let gas = await this.wallet.request({method:'eth_gasPrice', params:[]})
+    let gas = await this.wallet.request({method:'trx_gasPrice', params:[]})
     console.log('Average gas price:', parseInt(gas), gas)
     return gas
   }
 
   async getTransactionInfo(txid:string) {
-    let info = await this.wallet.request({method:'eth_getTransactionByHash', params:[txid]})
+    let info = await this.wallet.request({method:'trx_getTransactionByHash', params:[txid]})
     console.log('Transaction Info:', info)
     return info
   }
 
   async callContract(provider:any, abi:any, address:string, method:string, value:string) {
     console.log('Call', address, method)
-    let web = new Web3(provider)
-    let ctr = new web.eth.Contract(abi, address)
-    let gas = { gasPrice: 1000000000, gasLimit: 275000 }
-    //let res = ctr.methods[method].call(gas)
-    const data = ctr.methods[method]().encodeABI()
-    const tx = {
-      from: this.myaccount, // my wallet
-      to: address,  // contract address
-      value: value, // this is the value in wei to send
-      data: data    // encoded method and params
-    }
-    const txHash = await this.wallet.request({method: 'eth_sendTransaction', params: [tx]})
-    console.log({txHash})
   }
 
   async payment(destin:string, amount:string, memo?:string){
-    function numHex(num:number) { return '0x'+(num).toString(16) }
-    function strHex(str:string) { return '0x'+Buffer.from(str.toString(), 'utf8').toString('hex') }
-    const gasPrice = await this.getGasPrice() //numHex(100000000)
-    console.log('GAS', parseInt(gasPrice), gasPrice)
-    const gasEstim = await this.wallet.request({method:'eth_estimateGas', params:[{from:this.myaccount, to:destin}]})
-    console.log('EST', parseInt(gasEstim), gasEstim)
-    const gas = gasEstim
-    const wei = numHex(parseFloat(amount) * 10**18)
-    const method = 'eth_sendTransaction'
-    console.log(`Sending ${amount} ${wei} to ${destin}...`)
-    const tx = {
-      from: this.myaccount,
-      to: destin,
-      value: wei,
-      gasPrice,
-      gas,
-      data: ''
-    }
-    if(memo){ tx.data = strHex(memo) }
-    const params = [tx]
-    console.log('TX', params)
     try {
-      const result = await this.wallet.request({method,params})
-      console.log('TXID:', result)
-      return {success:true, txid:result, address:this.myaccount}
+      const from = this.myaccount
+      console.log(`Sending ${amount} TRX from ${from} to ${destin}...`)
+      const sun = this.wallet.toSun(amount)
+      console.log(`${sun} SUN`)
+      const trx = await this.wallet.transactionBuilder.sendTrx(destin, sun, from)
+      console.log('TRX', trx)
+      const trs = await this.wallet.trx.sign(trx)
+      console.log('TRS', trs)
+      const sent = await this.wallet.trx.sendRawTransaction(trs)
+      console.log('SENT', sent)
+      const txid = sent.txid
+      console.log('TXID', txid)
+      return {success:true, txid, address:this.myaccount}
     } catch(ex:any) {
       console.error(ex)
       return {success:false, error:ex.message}
@@ -328,36 +211,11 @@ export default class Wallet {
     function numHex(num:number) { return '0x'+(num).toString(16) }
     function strHex(str:string) { return '0x'+Buffer.from(str.toString(), 'utf8').toString('hex') }
     console.log(`Sending ${amount} ${token} token to ${destin}...`)
-    const gasPrice = await this.getGasPrice() //numHex(20000000000)
-    console.log('GAS', parseInt(gasPrice), gasPrice)
-    const gas = numHex(210000)
-    const wei = numHex(parseFloat(amount) * 10**6)  // usdc and usdt only have 6 decs
-    const method = 'eth_sendTransaction'
-    const ctr = new this.web3.eth.Contract(erc20, contract)
-    const data = ctr.methods.transfer(destin, wei).encodeABI()
-    console.log('Data', data)
-    //const count = await this.web3.eth.getTransactionCount(this.myaccount)
-    //const nonce = this.web3.utils.toHex(count)
-    const tx = {
-      from: this.myaccount,
-      to: contract,
-      value: '0x0',
-      gasPrice,
-      gas,
-      data
-    }
-
-    //let contract = await this.wallet.contract(abi, tokenAddress)
-    //let txID = await contract.transfer(receiver, 100).send()
-    //let result = await this.wallet.trx.getTransaction(txID)
-
-    //if(memo){ tx.data = strHex(memo) }
-    const params = [tx]
-    console.log('TX', params)
+    const ctr = await this.wallet.contract().at(contract)
     try {
-      const result = await this.wallet.request({method,params})
+      const result = await this.wallet.trx.send(destin, amount)
       console.log('TXID', result)
-      return {success:true, txid:result, address:this.myaccount}
+      return {success:true, txid:result.txid, address:this.myaccount}
     } catch(ex:any) {
       console.error(ex)
       return {success:false, error:ex.message}
@@ -365,30 +223,5 @@ export default class Wallet {
   }
 
 }
-
-/*
-function onWallet() {
-  console.log('On wallet');
-  if(this.wallet.isConnected()) {
-    console.log('Logout');
-    this.wallet.enable(); // ???
-  } else {
-    console.log('Enable');
-    this.wallet.enable();
-  }
-}
-
-async function calcGas(numx, web) {
-  let gas = { gasPrice: 20000000000, gasLimit: 25000 };
-  let prc = 20000000000;
-  if(web){ prc = await web.eth.getGasPrice(); console.log('Gas Price', prc); }
-  let est = parseInt(numx, 16);
-  let lmt = parseInt(est * 1.15);
-  gas.gasPrice = parseInt(prc);
-  gas.gasLimit = lmt;
-  console.log(gas);
-  return gas;
-}
-*/
 
 // END

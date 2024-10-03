@@ -6,37 +6,46 @@ import { title } from 'process'
 import { coinFromChain } from '@/libs/utils/chain'
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/ui/table'
 import { ColumnDef, createColumnHelper, flexRender, getCoreRowModel, getSortedRowModel, SortingState, useReactTable } from '@tanstack/react-table'
+//import type { Donation } from '@/types/models'
+
+type Dictionary = { [key: string]: any }
+
 
 interface Donation {
   id: string
   created: Date
   initiative: { title: string }
   organization: { name: string }
-  amount: string
+  amount: number
   chain: string
   storyId: string
   image: string
   impactScore: string
   impactLabel: string
+  impactLinks: [Dictionary]
 }
+
 
 interface DonationHeader extends Omit<Donation, 'initiative' | 'organization'> {
   initiative: string
   organization: string
 }
 
-type Dictionary = { [key: string]: any }
 
 export default function TableDonationsSort(props: Dictionary) {
   const router = useRouter()
   const donations: Donation[] = props?.donations || []
   const records = donations.map((rec) => {
-    const unitValue = rec.impactlinks.length > 0 ? (rec.impactlinks[0].story?.unitvalue||0) : 0
+    let unitValue = 0
+    let unitLabel = ''
+    if(rec.impactLinks && rec.impactLinks.length > 0) {
+      unitValue = rec.impactLinks[0].story?.unitvalue || 0
+      unitLabel = rec.impactLinks[0].story?.unitlabel || ''
+    }
     let impactScore = ''
     if(unitValue>0){
       impactScore = Math.ceil(rec.amount / unitValue).toString()
     }
-    const unitLabel = rec.impactlinks.length > 0 ? (rec.impactlinks[0].story?.unitlabel||'') : ''
     let impactLabel = unitLabel
     if(unitLabel){
       impactLabel = unitLabel + (impactScore == '1' ? '' : 's')
@@ -46,14 +55,15 @@ export default function TableDonationsSort(props: Dictionary) {
     return {
       id: rec.id,
       created: rec.created,
-      initiative: rec.initiative.title,
-      organization: rec.organization.name,
+      initiative: rec.initiative?.title || '',
+      organization: rec.organization?.name || '',
       amount: rec.amount,
       chain: rec.chain,
       storyId: rec.storyId,
       image: rec.storyId ? '/media/icon-story.svg' : '',
       impactScore,
       impactLabel,
+      impactLinks: rec.impactLinks
     }
   })
 
@@ -77,7 +87,7 @@ export default function TableDonationsSort(props: Dictionary) {
     }),
     columnHelper.accessor('amount', {
       header: 'USD Amount',
-      cell: (info) => '$'+parseFloat(info.getValue()).toFixed(2).toString(),
+      cell: (info) => '$'+info.getValue().toFixed(2).toString(),
     }),
     columnHelper.accessor('chain', {
       header: 'Chain',

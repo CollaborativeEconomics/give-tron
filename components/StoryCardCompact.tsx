@@ -16,8 +16,7 @@ export default function StoryCardCompact(props:{story:Story}) {
     <Card className="flex overflow-hidden h-auto">
       <div className="relative min-w-[150px] max-w-[25%] w-full h-auto -mr-6">
         <Image
-          className=""
-          src={story.image}
+          src={story?.image || '/media/noimage.png'}
           alt="IMG BG"
           className="object-cover"
           width={300}

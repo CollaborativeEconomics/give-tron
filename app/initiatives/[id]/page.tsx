@@ -51,10 +51,9 @@ export default async function Donate(props: { params: { id: string } }) {
         <div className="flex overflow-hidden mb-4 flex-col md:flex-row">
           <div className="relative w-full md:w-[45%] h-[200px] md:h-[300px] mb-12 md:mb-0">
             <Image
-              className="h-[300px] rounded-lg"
+              className="h-[300px] rounded-lg object-cover"
               src={initiative.defaultAsset||'noimage.png'}
               alt="IMG BG"
-              className="object-cover"
               width={300}
               height={300}
             />

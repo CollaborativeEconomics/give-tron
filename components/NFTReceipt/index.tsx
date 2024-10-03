@@ -92,11 +92,11 @@ export default function NFTReceipt(props: { receipt: Receipt }) {
             NFT Receipt
           </h3>
         </div>
-        <div className="relative my-4 w-full h-48">
+        <div className="relative my-4 w-full">
           <Image
             src={donation.image}
             alt="IMG BG"
-            className="object-cover"
+            className="object-cover mx-auto"
             width={300}
             height={300}
           />
@@ -119,7 +119,7 @@ export default function NFTReceipt(props: { receipt: Receipt }) {
             <NFTReceiptText>Donation amount</NFTReceiptText>
             <div className="flex border-dotted border-t-2 border-gray-300 w-full"></div>
             <NFTReceiptText>
-              {decimalString(donation.amount, 4)} {donation.ticker}*
+              {decimalString(donation.amount, 2)} {donation.ticker}*
             </NFTReceiptText>
           </div>
           <NFTReceiptText className="font-normal whitespace-normal">

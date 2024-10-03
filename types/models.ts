@@ -10,8 +10,8 @@ export enum Chain {
   Flare,
   Optimism,
   Polygon,
-  Stellar,
   Starknet,
+  Stellar,
   Tron,
   XDC,
   XRPL
@@ -44,6 +44,7 @@ export interface Action {
   id: string
   hookId: string
   actionDefinition: string
+  index: number
   hook?: Hook
 }
 
@@ -83,9 +84,10 @@ export interface Category {
   title: string
   description: string
   image?: string
+  donations?: Donation[]
   initiatives?: Initiative[]
   organizations?: Organization[]
-  donations?: Donation[]
+  stories?: Story[]
 }
 
 export interface Chapter {
@@ -114,6 +116,19 @@ export interface Collection {
   offers?: Offer[]
 }
 
+export interface Contract {
+  id: string
+  created?: Date
+  inactive?: boolean
+  chain?: string
+  contract_address?: string
+  entity_id?: string
+  admin_wallet_address?: string
+  contract_type?: string
+  network?: string
+  start_block?: string
+}
+
 export interface Credit {
   id: string
   providerId: string
@@ -129,6 +144,14 @@ export interface Credit {
   goal?: number
   initiative?: Initiative
   provider?: Provider
+}
+
+export interface Cronjob {
+  id: string
+  created: Date
+  cron: string
+  status: number
+  result: string
 }
 
 export interface Donation {
@@ -148,15 +171,60 @@ export interface Donation {
   status: number
   categoryId?: string
   chain?: Chain
+  storyId?: string
   category?: Category
+  initiative?: Initiative
+  organization?: Organization
+  impactlinks?: Impactlink[]
+}
+
+export interface Eventmedia {
+  id: string
+  created?: Date
+  inactive?: boolean
+  eventid?: string
+  mediaurl?: string
+  mime?: string
+}
+
+export interface Events {
+  id: string
+  created?: Date
+  inactive?: boolean
+  status?: number
+  organizationid?: string
+  initiativeid?: string
+  name?: string
+  description?: string
+  location?: string
+  budget?: number
+  unitvalue?: number
+  unitlabel?: string
+  quantity?: number
+  voltoearn?: boolean
+  volunteers?: number
+  image?: string
+  payrate?: number
 }
 
 export interface Hook {
   id: string
-  orgId: string
   triggerName: string
-  actions?: Action[]
   createdAt: Date
+  orgId: string
+  actions?: Action[]
+  organizations?: Organization
+}
+
+export interface Impactlink {
+  id: string
+  created?: Date
+  storyid?: string
+  donationid?: string
+  amount?: number
+  partial?: boolean
+  donation?: Donation
+  story?: Story
 }
 
 export interface Initiative {
@@ -183,7 +251,10 @@ export interface Initiative {
   received: number
   lastmonth: number
   contractcredit?: string
+  unitvalue?: number
+  unitlabel?: string
   credits?: Credit[]
+  donations?: Donation[]
   category?: Category
   organization?: Organization
   tiers?: InitiativeTier[]
@@ -225,6 +296,7 @@ export interface NFTData {
   tokenId: string
   offerId?: string
   status: number
+  donationId?: string
   initiative?: Initiative
   organization?: Organization
   user?: User
@@ -277,6 +349,8 @@ export interface Organization {
   goal?: number
   background?: string
   artworks?: Artwork[]
+  donations?: Donation[]
+  hooks?: Hook[]
   initiative?: Initiative[]
   nfts?: NFTData[]
   offers?: Offer[]
@@ -317,12 +391,17 @@ export interface Story {
   inactive: boolean
   organizationId: string
   initiativeId: string
-  name: string
-  description: string
-  amount: number
-  image: string
+  name?: string
+  description?: string
+  amount?: number
+  image?: string
   tokenId?: string
   metadata?: string
+  categoryId?: string
+  unitvalue?: number
+  unitlabel?: string
+  impactlinks?: Impactlink[]
+  category?: Category
   initiative?: Initiative
   organization?: Organization
   media?: StoryMedia[]
@@ -332,6 +411,7 @@ export interface StoryMedia {
   id: string
   storyId: string
   media: string
+  mime?: string
   story?: Story
 }
 
@@ -346,7 +426,7 @@ export interface User {
   image?: string
   name: string
   description?: string
-  wallet: string
+  wallet?: string
   type: number
   Account?: Account[]
   artworks?: Artwork[]
@@ -371,6 +451,20 @@ export interface VerificationToken {
   identifier: string
   token: string
   expires: Date
+}
+
+export interface Volunteers {
+  id: string
+  created?: Date
+  inactive?: boolean
+  status?: number
+  eventid?: string
+  address?: string
+  units?: number
+  payrate?: number
+  amount?: number
+  nftid?: string
+  chain?: string
 }
 
 export interface Wallet {

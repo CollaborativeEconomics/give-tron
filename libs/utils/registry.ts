@@ -42,6 +42,7 @@ const postRegistry = async (endpoint: string, body: Dictionary) => {
   }
   const response = await fetch(url, options)
   const result = await response.json()
+  console.error('DBRES', result)
   return result
 }
 
@@ -141,5 +142,10 @@ export const getDonationsByUser = (id: string) => fetchRegistry('donations?useri
 
 export const getFavoriteOrganizations = (userid: string) => fetchRegistry('donations?favs='+userid)
 export const getUserBadges = (userid: string) => fetchRegistry('donations?badges='+userid)
+
+export const newContract = (body: Dictionary) => postRegistry('contracts', body)
+export const getContract = (entity_id: string, chain: string, network: string, contract_type: string) => fetchRegistry(`contracts?entity_id=${entity_id}&chain=${chain}&network=${network}&contract_type=${contract_type}`)
+export const getContractsByOrganization = (id: string, chain: string, network: string) => fetchRegistry(`contracts?entity_id=${id}&chain=${chain}&network=${network}`)
+
 
 // END

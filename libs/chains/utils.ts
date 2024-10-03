@@ -1,4 +1,5 @@
 import Chains from '@/libs/chains/client/apis'
+import config from '@/app/config'
 
 export type Dictionary = { [key:string]:any }
 
@@ -20,7 +21,7 @@ export function getChainWallet(currency:string){
 
 export function getChainNetwork(chain:string){
   const networks:Dictionary = {
-    'trx':  process.env.NEXT_PUBLIC_NETWORK || ''
+    'trx':  config.blockchain.network || ''
   }
   const name = networks[chain] || 'testnet'
   return name

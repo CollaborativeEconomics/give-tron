@@ -58,7 +58,6 @@ export default function DonationForm(props:any) {
   const initiative = props.initiative
   const usdRate = props.rate
   const organization = initiative?.organization
-  if(!initiative || !organization){ return <NotFound /> }
   const {donation, setDonation} = useContext(DonationContext)
   const chainName = config.blockchain.chainName || ''
   const currency  = config.blockchain.coinSymbol || ''
@@ -85,6 +84,13 @@ export default function DonationForm(props:any) {
   const [buttonText, setButtonText] = useState('Donate')
   const [message, setMessage] = useState('One wallet confirmation required')
   const [rateMessage, setRateMessage] = useState('USD conversion rate')
+
+  useEffect(() => {
+    console.log('SWITCH')
+    recalc()
+  }, [showSYM])
+
+  if(!initiative || !organization){ return <NotFound /> }
 
   function $(id:string){ return document.getElementById(id) as HTMLInputElement }
 
@@ -316,11 +322,6 @@ export default function DonationForm(props:any) {
     setDonation(data)
     console.log('DATA', data)
   }
-
-  useEffect(() => {
-    console.log('SWITCH')
-    recalc()
-  }, [showSYM])
 
   return (
     <div className="flex min-h-full w-full mt-4">

@@ -2,6 +2,7 @@ import Chains from '@/libs/chains/server/apis'
 import uploadToIPFS from '@/libs/utils/uploadToIPFS'
 import { getOrganizationById, getInitiativeById, getUserByWallet, createNFT } from '@/libs/utils/registry'
 import { getTransactionInfo } from '@/libs/chains/txinfo'
+import config from '@/app/config'
 
 interface transactionInfo {
   success?: boolean
@@ -36,7 +37,7 @@ export async function POST(request: Request) {
     }
 
     // Get tx info
-    const chain = process.env.NEXT_PUBLIC_BLOCKCHAIN || ''
+    const chain = config.blockchain.chainName || ''
     const txInfo = await Chains[chain].getTransactionInfo(txid)
     console.log('TXINFO', txInfo)
     if(!txInfo){
@@ -76,9 +77,9 @@ export async function POST(request: Request) {
     console.log(organizationId);
     const organizationName = organization?.name
 
-    const network   = process.env.NEXT_PUBLIC_NETWORK || ''
-    const chainName = process.env.NEXT_PUBLIC_BLOCKCHAIN || ''
-    const currency  = process.env.NEXT_PUBLIC_CURRENCY_CODE || ''
+    const network   = config.blockchain.network || ''
+    const chainName = config.blockchain.chainName || ''
+    const currency  = config.blockchain.coinSymbol || ''
     const amountNum = parseFloat(amount) ||  0.0
     const amountCUR = amountNum.toFixed(4)
     const amountUSD = (amountNum * rate).toFixed(4)
