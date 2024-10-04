@@ -65,7 +65,7 @@ export function anonymousUser(address: string, chain: string) {
     api_key: uuid,
     name: 'Anonymous',
     description: '',
-    email: '',
+    email: `${UUID()}@anonymoususer.cfce`,
     emailVerified: false,
     image: '',
     inactive: false,
