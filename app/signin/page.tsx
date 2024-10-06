@@ -26,7 +26,7 @@ export default function Signin() {
   async function checkUser(address:string){
     const data = await fetchApi('users?wallet='+address)
     const user = data?.result
-    //console.log('User', user)
+    console.log('User', user?.id)
     if(user){
       // Redirect to profile
       console.log('UserId', user.id)
