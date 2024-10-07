@@ -117,31 +117,20 @@ class TronServer {
     }
   }
 
-  async mintNFT(address: string, uri: string){
+  async mintNFT(contract:string, address: string, uri: string){
     try {
       console.log(this.chain, 'server minting NFT to', address, uri)
       const secret   = process.env.ADMIN_WALLET_KEY || ''
       const minter   = this.sdk.address.fromPrivateKey(secret)
       console.log('MINTER', minter)
-      const chain    = this.chain.toLowerCase()
-      const network  = this.network
-      const entity_id = 'ALL'
-      const contract_type = 'NFTReceipt'
-      const contract = await getContract(entity_id, chain, network, contract_type)
-      console.log('CTR', contract)
-      if(!contract){
-        return {success:false, error:'NFT contract not found for this organization'}
-      }
-      const ctrid = contract[0].contract_address
-      console.log('CID', ctrid)
-      const instance = await this.sdk.contract().at(ctrid)
+      const instance = await this.sdk.contract().at(contract)
       const op = {
         callValue: 0,
         feeLimit: 100_000_000,
         shouldPollResponse: false
       }
       console.log('Minting...')
-      const txId = await instance.mint(address,uri).send(op)  
+      const txId = await instance.mint(address, uri).send(op)  
       console.log('MINTED', txId)
       const tkId = await instance.totalSupply().call()  
       console.log('TOKENID', tkId)

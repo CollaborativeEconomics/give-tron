@@ -1,6 +1,6 @@
 import Chains from '@/libs/chains/server/apis'
 import uploadToIPFS from '@/libs/utils/uploadToIPFS'
-import { getOrganizationById, getInitiativeById, getUserByWallet, createNFT } from '@/libs/utils/registry'
+import { getOrganizationById, getInitiativeById, getUserByWallet, getContract, createNFT } from '@/libs/utils/registry'
 import { getTransactionInfo } from '@/libs/chains/txinfo'
 import config from '@/app/config'
 
@@ -111,8 +111,20 @@ export async function POST(request: Request) {
     const uriMeta = 'ipfs:' + cid
     console.log('URI', uriMeta)
 
+    // Get contract
+    const entity_id = initiativeId
+    const chainLower = chainName.toLowerCase()
+    const contract_type = 'NFTReceipt'
+    const contract = await getContract(entity_id, chainLower, network, contract_type)
+    console.log('CTR', contract)
+    if(!contract){
+      return Response.json({ error:'NFT contract not found for this organization' }, {status:500})
+    }
+    const contractAddress = contract[0].contract_address
+    console.log('CID', contractAddress)
+
     // Mint NFT
-    const okMint = await Chains[chain].mintNFT(donorAddress, uriMeta)
+    const okMint = await Chains[chain].mintNFT(contractAddress, donorAddress, uriMeta)
     console.log('Mint result', okMint)
     //return Response.json(okMint)
     
@@ -165,6 +177,6 @@ export async function POST(request: Request) {
 
   } catch (ex:any) {
     console.error(ex)
-    return Response.json({ success: false, error: ex.message }, {status:500})
+    return Response.json({ error: ex.message }, {status:500})
   }
 }
