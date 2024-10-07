@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import React from 'react';
-import { SessionProvider } from "next-auth/react";
+import { SessionProvider } from 'next-auth/react';
 import { NavMenu } from './navigation-menu';
 
 export default function Header() {
@@ -32,9 +32,9 @@ export default function Header() {
           <Image
             src="/logo-white.svg"
             alt="Give Tron"
-            className="bg-logo-lite dark:bg-logo-dark"
-            width={500}
-            height={60}
+            className="bg-logo-lite dark:bg-logo-dark object-cover"
+            width={250}
+            height={50}
             priority
           />
         </Link>

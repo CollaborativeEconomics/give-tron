@@ -1,38 +1,39 @@
-'use client'
-import Image from 'next/image'
-import Link from 'next/link'
-import { Card, CardContent, CardHeader } from './ui/card'
-import { Progress } from './ui/progress'
-import { Separator } from './ui/separator'
-import { DateDisplay } from './ui/date-posted'
-import { Button } from './ui/button'
-import { OrgStats } from './ui/org-stats'
-import OrganizationAvatar from './OrganizationAvatar'
+'use client';
+import Image from 'next/image';
+import Link from 'next/link';
+import { Card, CardContent, CardHeader } from './ui/card';
+import { Progress } from './ui/progress';
+import { Separator } from './ui/separator';
+import { DateDisplay } from './ui/date-posted';
+import { Button } from './ui/button';
+import { OrgStats } from './ui/org-stats';
+import OrganizationAvatar from './OrganizationAvatar';
 
-const dummyImgSrc: string = 'https://partners.cfce.io/_next/image?url=https%3A%2F%2Fipfs.filebase.io%2Fipfs%2FQmcS3rZdEzNkYxSd79AJVgjkDpK7sBd1ej99i4sBXD1mkQ&w=256&q=75'
+const dummyImgSrc: string =
+  'https://partners.cfce.io/_next/image?url=https%3A%2F%2Fipfs.filebase.io%2Fipfs%2FQmcS3rZdEzNkYxSd79AJVgjkDpK7sBd1ej99i4sBXD1mkQ&w=256&q=75';
 
 export default function InitiativeCard({ ...props }) {
-  const initiative = props?.data || {}
-  const initurl = '/initiatives/' + (initiative?.id || 0)
-  let image = dummyImgSrc
+  const initiative = props?.data || {};
+  const initurl = '/initiatives/' + (initiative?.id || 0);
+  let image = dummyImgSrc;
   if (initiative?.imageUri) {
     image = initiative?.imageUri.startsWith('ipfs')
       ? 'https://ipfs.filebase.io/ipfs/' + initiative.imageUri.substr(5)
-      : initiative.imageUri
+      : initiative.imageUri;
   }
-  const startDate = new Date(initiative?.start).getTime()
-  const progress = (initiative.donations / initiative.goal) * 100
+  const startDate = new Date(initiative?.start).getTime();
+  const progress = (initiative.donations / initiative.goal) * 100;
 
   return (
     <Card className="flex flex-col overflow-hidden h-auto">
-      <CardHeader className="relative h-72">
+      <CardHeader className="relative h-72 p-0">
         <Link href={initurl}>
           <Image
             src={image}
             alt="IMG BG"
-            className="object-cover"
-            width={300}
-            height={300}
+            className="object-cover aspect-video"
+            width={600}
+            height={600}
           />
         </Link>
       </CardHeader>
@@ -71,5 +72,5 @@ export default function InitiativeCard({ ...props }) {
         </div>
       </CardContent>
     </Card>
-  )
+  );
 }
