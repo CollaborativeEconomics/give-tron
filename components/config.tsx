@@ -5,8 +5,8 @@ const settings = {
   name: 'Give Tron',
   version: '1.0',
   theme: 'light',
-  wallet: '',
-  user: '',
+  wallet: '' as string,
+  user: '' as string,
 } as const;
 
 type Config = typeof settings;
