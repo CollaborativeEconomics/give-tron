@@ -1,9 +1,9 @@
-'use client'
+'use client';
 
-import * as React from 'react'
-import { signIn, signOut, useSession } from "next-auth/react"
+import * as React from 'react';
+import { signIn, signOut, useSession } from 'next-auth/react';
 
-import { cn } from '@/libs/shadCnUtil'
+import { cn } from '@/libs/shadCnUtil';
 import {
   NavigationMenu,
   NavigationMenuContent,
@@ -12,9 +12,9 @@ import {
   NavigationMenuList,
   NavigationMenuTrigger,
   navigationMenuTriggerStyle,
-} from '@/components/ui/navigation-menu'
-import { Button } from '@/components/ui/button'
-import { HamburgerMenuIcon } from '@radix-ui/react-icons'
+} from '@/components/ui/navigation-menu';
+import { Button } from '@/components/ui/button';
+import { HamburgerMenuIcon } from '@radix-ui/react-icons';
 import {
   Sheet,
   SheetContent,
@@ -23,27 +23,27 @@ import {
   SheetHeader,
   SheetTitle,
   SheetTrigger,
-} from '@/components/ui/sheet'
-import { DarkModeSwitcher } from './dark-mode-switcher'
-import Link from 'next/link'
-import Image from 'next/image'
+} from '@/components/ui/sheet';
+import { DarkModeSwitcher } from './dark-mode-switcher';
+import Link from 'next/link';
+import Image from 'next/image';
 
 export function NavMenu() {
   const SessionStatus = {
     AUTHENTICATED: 'authenticated',
-    UNAUTHENTICATED: 'unauthenticated' // Add more statuses as needed
+    UNAUTHENTICATED: 'unauthenticated', // Add more statuses as needed
   };
-  const { data: session, status } = useSession()
+  const { data: session, status } = useSession();
   //console.log('Header Session', session, status)
-  const avatar  = session?.user?.image || '/media/nopic.png'
-  const userurl = session?.userid ? '/profile/'+session?.userid : ''
+  const avatar = session?.user?.image || '/media/nopic.png';
+  const userurl = session?.userid ? '/profile/' + session?.userid : '';
 
   return (
     <>
       <div className="flex-row gap-3 items-center hidden md:flex">
         <NavigationMenu>
           <NavigationMenuList>
-          {/*
+            {/*
             <NavigationMenuItem>
               <NavigationMenuTrigger>Partners</NavigationMenuTrigger>
               <NavigationMenuContent>
@@ -63,16 +63,27 @@ export function NavMenu() {
             </NavigationMenuItem>
           */}
             <NavigationMenuItem>
-              {status==SessionStatus.AUTHENTICATED
-              ?
-                <NavigationMenuLink className={navigationMenuTriggerStyle()} href={userurl}>
-                  <Image src={avatar} width={40} height={40} alt="Avatar" className="rounded-lg fixed" />
+              {status == SessionStatus.AUTHENTICATED ? (
+                <NavigationMenuLink
+                  className={navigationMenuTriggerStyle()}
+                  href={userurl}
+                >
+                  <Image
+                    src={avatar}
+                    width={40}
+                    height={40}
+                    alt="Avatar"
+                    className="rounded-lg fixed"
+                  />
                 </NavigationMenuLink>
-              :
-                <NavigationMenuLink className={navigationMenuTriggerStyle()} href="/signin">
+              ) : (
+                <NavigationMenuLink
+                  className={navigationMenuTriggerStyle()}
+                  href="/signin"
+                >
                   Sign In
                 </NavigationMenuLink>
-              }
+              )}
             </NavigationMenuItem>
           </NavigationMenuList>
         </NavigationMenu>
@@ -107,7 +118,7 @@ export function NavMenu() {
         </Sheet>
       </div>
     </>
-  )
+  );
 }
 
 const ListItem = React.forwardRef<
@@ -121,7 +132,7 @@ const ListItem = React.forwardRef<
           ref={ref}
           className={cn(
             'block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground',
-            className
+            className,
           )}
           {...props}
         >
@@ -132,6 +143,6 @@ const ListItem = React.forwardRef<
         </a>
       </NavigationMenuLink>
     </li>
-  )
-})
-ListItem.displayName = 'ListItem'
+  );
+});
+ListItem.displayName = 'ListItem';
